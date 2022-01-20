@@ -152,8 +152,7 @@ struct search {
     }
 
     pareto_dijkstra<Dir, Label, lower_bounds> pd(
-        q.sched_->next_node_id_, q.sched_->stations_.size(), is_goal,
-        std::move(additional_edges), lbs, *q.mem_);
+        *q.sched_, is_goal, std::move(additional_edges), lbs, *q.mem_);
 
     auto const add_start_labels = [&](time interval_begin, time interval_end) {
       pd.add_start_labels(StartLabelGenerator::generate(

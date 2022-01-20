@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
+#include "motis/core/common/logging.h"
 #include "motis/rt/additional_service_builder.h"
 #include "motis/rt/reroute_result.h"
 
@@ -84,7 +85,7 @@ struct statistics {
     return o;
   }
 
-  void print() const { std::cout << *this << "\n"; }
+  void print() const { LOG(logging::info) << *this << "\n"; }
 
   void log_sched_time_mismatch(int diff) {
     if (diff != 0) {
