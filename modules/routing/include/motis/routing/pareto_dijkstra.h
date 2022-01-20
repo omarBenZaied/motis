@@ -18,6 +18,67 @@ const bool FORWARDING = true;
 
 template <search_dir Dir, typename Label, typename LowerBounds>
 struct pareto_dijkstra {
+#define ROUTING_DEBUG_ENABLED
+#ifdef ROUTING_DEBUG_ENABLED
+  struct label_dbg {
+    schedule const& sched_;
+    Label const& l_;
+  };
+
+  struct edge_dbg {
+    schedule const& sched_;
+    edge const& e_;
+  };
+
+  friend std::ostream& operator<<(std::ostream& out, label_dbg const& dbg_l) {
+    auto const [sched, l] = dbg_l;
+
+    out << "{LABEL start=" << format_time(l.start_)
+        << ", now=" << format_time(l.now_) << " with (";
+
+    if constexpr (std::is_base_of_v<travel_time, Label>) {
+      out << "tt=" << format_time(l.travel_time_) << " ";
+    }
+
+    if constexpr (std::is_base_of_v<transfers, Label>) {
+      out << "ic=" << l.transfers_ << " ";
+    }
+
+    if constexpr (std::is_base_of_v<travel_time, Label>) {
+      out << "tt_lb=" << format_time(l.travel_time_lb_) << " ";
+    }
+
+    if constexpr (std::is_base_of_v<transfers, Label>) {
+      out << "ic_lb=" << l.transfers_lb_ << " ";
+    }
+
+    auto const node = l.edge_->to_;
+    out << " AT " << node->type_str() << "=" << node->id_
+        << ", station=" << sched.stations_.at(node->get_station()->id_)->name_
+        << "}";
+
+    return out;
+  }
+
+  friend std::ostream& operator<<(std::ostream& out, edge_dbg const& dbg_e) {
+    auto const& [sched, e] = dbg_e;
+    return out << "{" << e.type_str() << " from=" << e->from_->id_ << "["
+               << sched.stations_.at(e->from_->get_station()->id_)->name_
+               << "], to=" << e->to_->id_ << " ["
+               << sched.stations_.at(e->to_->get_station()->id_)->name_ << "]"
+               << "}";
+  }
+
+  template <typename FmtStr, typename... FmtArgs>
+  void dbg(FmtStr fmt_str, FmtArgs&&... args) {
+    logging::l(logging::log_level::debug, std::forward<FmtStr>(fmt_str),
+               std::forward<FmtArgs&&>(args)...);
+  }
+#else
+  template <typename FmtStr, typename FmtArgs>
+  void dbg(FmtStr, FmtArgs&&...) {}
+#endif
+
   struct compare_labels {
     bool operator()(Label const* a, Label const* b) const {
       return a->operator<(*b);
@@ -78,23 +139,29 @@ struct pareto_dijkstra {
         stats_.labels_popped_after_last_result_++;
       }
 
+      dbg("extract label {}", *label);
+
       // is label already made obsolete
       if (label->dominated_) {
+        dbg("\tdominated");
         label_store_.release(label);
         stats_.labels_dominated_by_later_labels_++;
         continue;
       }
 
       if (dominated_by_results(label)) {
+        dbg("\tdominated by results");
         stats_.labels_dominated_by_results_++;
         continue;
       }
 
       if (label->get_node()->id_ < station_node_count_ &&
           is_goal_[label->get_node()->id_]) {
+        dbg("\tat goal");
         continue;
       }
 
+      dbg("\texpanding:");
       auto it = additional_edges_.find(label->get_node());
       if (it != std::end(additional_edges_)) {
         for (auto const& additional_edge : it->second) {
@@ -120,7 +187,6 @@ struct pareto_dijkstra {
 
   std::vector<Label*> const& get_results() { return results_; }
 
-private:
   void create_new_label(Label* l, edge const& edge) {
     Label blank{};
     bool created = l->create_label(
@@ -130,11 +196,13 @@ private:
             (Dir == search_dir::BWD && edge.type() == edge::ENTER_EDGE &&
              is_goal_[edge.get_source<Dir>()->get_station()->id_]));
     if (!created) {
+      dbg("{} -> {} -- no label created!", *l, edge);
       return;
     }
 
     auto new_label = label_store_.create<Label>(blank);
     ++stats_.labels_created_;
+    dbg("{} -> {} -- label created\n\t\t{}", *l, edge);
 
     if (edge.get_destination<Dir>()->id_ < station_node_count_ &&
         is_goal_[edge.get_destination<Dir>()->id_]) {

@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 
+#include <fstream>  // TODO(felix) remove
+#include <ostream>  // TODO(felix) remove
 #include <string>
 
 #include "flatbuffers/flatbuffers.h"
@@ -9,7 +11,6 @@
 #include "motis/core/journey/journey.h"
 #include "motis/core/journey/message_to_journeys.h"
 #include "motis/module/message.h"
-#include "motis/ris/risml/risml_parser.h"
 #include "motis/test/motis_instance_test.h"
 #include "motis/test/schedule/platform_interchange.h"
 
@@ -106,6 +107,12 @@ struct platform_interchange_rt2_test
 TEST_F(platform_interchange_rt2_test, track_change1) {
   auto res = call(routing_request());
   auto journeys = message_to_journeys(motis_content(RoutingResponse, res));
+
+  std::ofstream out;
+  out.open("/home/felix/Downloads/master_con.json");
+  out << res->to_json(true);
+  out.flush();
+  out.close();
 
   ASSERT_EQ(2, journeys.size());
 
