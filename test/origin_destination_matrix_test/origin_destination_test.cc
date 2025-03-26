@@ -15,6 +15,8 @@ namespace json = boost::json;
 using namespace std::string_view_literals;
 using namespace motis;
 
+using test_strings = std::vector<std::vector<std::vector<std::string>>>;
+
 constexpr auto const kGTFS = R"(
 # agency.txt
 agency_id,agency_name,agency_url,agency_timezone
@@ -77,7 +79,7 @@ DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
 stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
 DA,DA Hbf,49.87260,8.63085,1,,
 FFM,FFM Hbf,50.10701,8.66341,1,,
-LANGEN,Langen,49.99359,8.65677,1,,1
+LANGEN,Langen,49.99359,8.65677,1,,
 
 # routes.txt
 route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
@@ -216,6 +218,43 @@ void validate_result(std::vector<route_result> const& results,Coordinates const&
 
     ASSERT_NEAR(itinerary.legs_.back().to_.lat_,to.y,DOUBLE_DIFFERENCE);
     ASSERT_NEAR(itinerary.legs_.back().to_.lon_,to.x,DOUBLE_DIFFERENCE);
+  }
+}
+void test_route(std::vector<Coordinates> const& coordinates,std::string const& gtfs,
+  interval<unixtime_t> const& interval,test_strings const& expected_strings) {
+  auto ec = std::error_code{};
+  std::filesystem::remove_all("test/data", ec);
+
+  auto const c = config{
+    .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
+    .osm_ = {"test/resources/test_case.osm.pbf"},
+    .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
+                .db_size_ = 1024U * 1024U * 25U}},
+    .timetable_ =
+          motis::config::timetable{
+            .first_day_ = "2019-05-01",
+            .num_days_ = 1,
+            .datasets_ = {{"test", {.path_ = gtfs}}}},
+    .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
+    .street_routing_ = true,
+    .osr_footpath_ = true,
+    .geocoding_ = true,
+    .reverse_geocoding_ = true};
+  auto d = import(c, "test/data", true);
+  auto const routing = utl::init_from<ep::routing>(d).value();
+
+  for(int i=0;i<coordinates.size();++i) {
+    for(int j=0;j<coordinates.size();++j) {
+      if(i==j) continue;
+      auto result = route(coordinates[i],coordinates[j],interval,routing);
+      validate_result(result,coordinates[i],coordinates[j],interval);
+      ASSERT_EQ(result.size(),expected_strings[i][j].size());
+      for(int k=0;k<result.size();++k) {
+        auto ss = std::stringstream{};
+        print_short(ss, result[k]);
+        ASSERT_EQ(ss.str(),expected_strings[i][j][k]);
+      }
+    }
   }
 }
 
@@ -396,9 +435,9 @@ LANGEN,Langen,49.99359,8.65677,1,,1
 
 TEST(motis,route_simple_plan) {
 
-  std::vector<std::string> expected_strings[2];
+  test_strings expected_strings{{{},{}},{{},{}}};
 
-  expected_strings[0] = {R"(date=2019-05-01, start=01:04, end=02:47, duration=01:43, transfers=1, legs=[
+  expected_strings[0][1] = {R"(date=2019-05-01, start=01:04, end=02:47, duration=01:43, transfers=1, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 01:04, mode="WALK", trip="-", end=2019-05-01 01:05),
     (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 01:05, mode="SUBWAY", trip="U4", end=2019-05-01 01:10),
     (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 01:10, mode="WALK", trip="-", end=2019-05-01 01:12),
@@ -478,7 +517,7 @@ TEST(motis,route_simple_plan) {
     (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 20:45, mode="WALK", trip="-", end=2019-05-01 20:47)
 ])"};
 
-  expected_strings[1] = {R"(date=2019-05-01, start=01:13, end=01:21, duration=00:08, transfers=0, legs=[
+  expected_strings[1][0] = {R"(date=2019-05-01, start=01:13, end=01:21, duration=00:08, transfers=0, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 01:13, mode="WALK", trip="-", end=2019-05-01 01:15),
     (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 01:15, mode="METRO", trip="S3", end=2019-05-01 01:20),
     (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 01:20, mode="WALK", trip="-", end=2019-05-01 01:21)
@@ -544,6 +583,42 @@ TEST(motis,route_simple_plan) {
     (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 21:20, mode="WALK", trip="-", end=2019-05-01 21:21)
 ])"};
 
+  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
+  unixtime_t start_time = std::chrono::sys_days(day);
+  auto end_time = start_time + std::chrono::minutes(1440);
+  interval<unixtime_t> interval;
+  interval.from_ = start_time;
+  interval.to_ = end_time;
+
+  /*
+  DA,DA Hbf,49.87260,8.63085,1,,
+FFM,FFM Hbf,50.10701,8.66341,1,,
+  49.99359,8.65677
+   */
+  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
+    Coordinates(8.66341,50.10701)};
+  test_route(coordinates,std::string{simple_GTFS},interval,expected_strings);
+}
+
+TEST(motis,route_simple_plan_2) {
+  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
+  unixtime_t start_time = std::chrono::sys_days(day);
+  auto end_time = start_time + std::chrono::minutes(1440);
+  interval<unixtime_t> interval;
+  interval.from_ = start_time;
+  interval.to_ = end_time;
+
+  /*
+  DA,DA Hbf,49.87260,8.63085,1,,
+FFM,FFM Hbf,50.10701,8.66341,1,,
+FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
+DA_10,DA Hbf,49.87336,8.62926,0,DA,10
+   */
+  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
+  Coordinates(8.66341,50.10701),
+  Coordinates(8.67824,50.11404),
+  Coordinates(8.62926,49.87336)};
+
   auto ec = std::error_code{};
   std::filesystem::remove_all("test/data", ec);
 
@@ -556,7 +631,7 @@ TEST(motis,route_simple_plan) {
           motis::config::timetable{
             .first_day_ = "2019-05-01",
             .num_days_ = 1,
-            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS}}}}},
+            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS2}}}}},
     .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
     .street_routing_ = true,
     .osr_footpath_ = true,
@@ -565,30 +640,14 @@ TEST(motis,route_simple_plan) {
   auto d = import(c, "test/data", true);
   auto const routing = utl::init_from<ep::routing>(d).value();
 
-  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
-  unixtime_t start_time = std::chrono::sys_days(day);
-  auto end_time = start_time + std::chrono::minutes(1440);
-  interval<unixtime_t> interval;
-  interval.from_ = start_time;
-  interval.to_ = end_time;
-
-  /*
-  DA,DA Hbf,49.87260,8.63085,1,,
-FFM,FFM Hbf,50.10701,8.66341,1,,
-LANGEN,Langen,49.99359,8.65677,1,,1
-   */
-  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
-    Coordinates(8.66341,50.10701)};
   for(int i=0;i<coordinates.size();++i) {
     for(int j=0;j<coordinates.size();++j) {
       if(i==j) continue;
       auto result = route(coordinates[i],coordinates[j],interval,routing);
-      validate_result(result,coordinates[i],coordinates[j],interval);
-      ASSERT_EQ(result.size(),expected_strings[i].size());
-      for(int k=0;k<result.size();++k) {
+      for(auto const& itinerary: result) {
         auto ss = std::stringstream{};
-        print_short(ss, result[k]);
-        ASSERT_EQ(ss.str(),expected_strings[i][k]);
+        print_short(ss, itinerary);
+        std::cout << "---\n" << ss.str() << "\n---\n" << std::endl;
       }
     }
   }
