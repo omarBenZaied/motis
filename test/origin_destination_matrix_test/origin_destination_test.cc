@@ -108,11 +108,10 @@ S1,20190501,1
 
 # frequencies.txt
 trip_id,start_time,end_time,headway_secs
-S3,01:15:00,25:15:00,7200
-ICE,00:35:00,24:35:00,7200
-U4,01:05:00,25:05:00,7200
+S3,01:15:00,25:15:00,28800
+ICE,00:35:00,24:35:00,28800
+U4,01:05:00,25:05:00,28800
 )"sv;
-
 
 constexpr auto const simple_GTFS2 = R"(
 # agency.txt
@@ -124,7 +123,7 @@ stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
 DA,DA Hbf,49.87260,8.63085,1,,
 FFM,FFM Hbf,50.10701,8.66341,1,,
 FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
-DA_10,DA Hbf,49.87336,8.62926,0,DA,10
+DA_10,DA Hbf,49.872797,8.631438,0,DA,10
 
 # routes.txt
 route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
@@ -153,9 +152,101 @@ S1,20190501,1
 
 # frequencies.txt
 trip_id,start_time,end_time,headway_secs
-S3,01:15:00,25:15:00,14400
-ICE,00:35:00,24:35:00,14400
-U4,01:05:00,25:05:00,14400
+S3,01:15:00,25:15:00,28800
+ICE,00:35:00,24:35:00,28800
+U4,01:05:00,25:05:00,28800
+)"sv;
+
+constexpr auto const simple_GTFS3 = R"(
+# agency.txt
+agency_id,agency_name,agency_url,agency_timezone
+DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
+
+# stops.txt
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
+FFM,FFM Hbf,50.10701,8.66341,1,,
+FFM_101,FFM Hbf,50.10739,8.66333,0,FFM,101
+FFM_10,FFM Hbf,50.10593,8.66118,0,FFM,10
+FFM_12,FFM Hbf,50.10658,8.66178,0,FFM,12
+FFM_HAUPT,FFM Hauptwache,50.11403,8.67835,1,,
+FFM_HAUPT_U,Hauptwache U1/U2/U3/U8,50.11385,8.67912,0,FFM_HAUPT,
+FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
+
+# routes.txt
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
+S3,DB,S3,,,109
+U4,DB,U4,,,402
+
+# trips.txt
+route_id,service_id,trip_id,trip_headsign,block_id
+S3,S1,S3,,
+U4,S1,U4,,
+
+# stop_times.txt
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
+S3,01:15:00,01:15:00,FFM,1,0,0
+S3,01:20:00,01:20:00,FFM_HAUPT,2,0,0
+U4,01:05:00,01:05:00,FFM_HAUPT,0,0,0
+U4,01:10:00,01:10:00,FFM,1,0,0
+
+# calendar_dates.txt
+service_id,date,exception_type
+S1,20190501,1
+
+# frequencies.txt
+trip_id,start_time,end_time,headway_secs
+S3,01:15:00,25:15:00,28800
+U4,01:05:00,25:01:00,28800
+)"sv;
+
+constexpr auto const simple_GTFS4 = R"(
+# agency.txt
+agency_id,agency_name,agency_url,agency_timezone
+DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
+
+# stops.txt
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
+ST1,Station 1,50.1,8.6,1,,
+ST2,Station 2,50.1,8.7,0,FFM,101
+ST3,Station 3,50.0,8.6,0,FFM,10
+ST4,Station 4,50.0,8.7,0,FFM,12
+
+
+# routes.txt
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
+S3,DB,S3,,,109
+U4,DB,U4,,,402
+S4,DB,S4,,,109
+S5,DB,S5,,,109
+
+# trips.txt
+route_id,service_id,trip_id,trip_headsign,block_id
+S3,S1,S3,,
+U4,S1,U4,,
+S4,S1,S4,,
+S5,S1,S5,,
+
+# stop_times.txt
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
+S3,01:15:00,01:15:00,ST1,1,0,0
+S3,01:20:00,01:20:00,ST2,2,0,0
+U4,01:05:00,01:05:00,ST2,0,0,0
+U4,01:10:00,01:10:00,ST3,1,0,0
+S4,01:20:00,01:20:00,ST3,1,0,0
+S4,01:25:00,01:25:00,ST4,2,0,0
+S5,00:15:00,00:15:00,ST4,1,0,0
+S5,00:20:00,00:20:00,ST1,2,0,0
+
+# calendar_dates.txt
+service_id,date,exception_type
+S1,20190501,1
+
+# frequencies.txt
+trip_id,start_time,end_time,headway_secs
+S3,01:15:00,25:15:00,28800
+U4,01:05:00,25:01:00,28800
+S4,01:20:00,25:20:00,28800
+S5,00:15:00,24:15:00,28800
 )"sv;
 
 void print_short(std::ostream& out, api::Itinerary const& j) {
@@ -210,7 +301,7 @@ void print_short(std::ostream& out, api::Itinerary const& j) {
 void validate_result(std::vector<route_result> const& results,Coordinates const& from, Coordinates const& to,interval<unixtime_t> const& interval) {
   double constexpr DOUBLE_DIFFERENCE = 0.0000001;
   for(auto const& itinerary : results) {
-    ASSERT_LT(interval.from_,itinerary.startTime_);
+    ASSERT_LE(interval.from_,itinerary.startTime_);
     ASSERT_GE(interval.to_,itinerary.startTime_);
 
     ASSERT_NEAR(itinerary.legs_.front().from_.lat_,from.y,DOUBLE_DIFFERENCE);
@@ -220,14 +311,67 @@ void validate_result(std::vector<route_result> const& results,Coordinates const&
     ASSERT_NEAR(itinerary.legs_.back().to_.lon_,to.x,DOUBLE_DIFFERENCE);
   }
 }
-void test_route(std::vector<Coordinates> const& coordinates,std::string const& gtfs,
-  interval<unixtime_t> const& interval,test_strings const& expected_strings) {
+
+void print_routes(std::vector<Coordinates> const& coordinates,std::string const& gtfs,
+  interval<unixtime_t> const& interval,const char* street_file) {
   auto ec = std::error_code{};
   std::filesystem::remove_all("test/data", ec);
 
   auto const c = config{
     .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
-    .osm_ = {"test/resources/test_case.osm.pbf"},
+    .osm_ = {street_file},
+    .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
+                .db_size_ = 1024U * 1024U * 25U}},
+    .timetable_ =
+          motis::config::timetable{
+            .first_day_ = "2019-05-01",
+            .num_days_ = 1,
+            .datasets_ = {{"test", {.path_ = gtfs}}}},
+    .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
+    .street_routing_ = true,
+    .osr_footpath_ = true,
+    .geocoding_ = true,
+    .reverse_geocoding_ = true};
+  auto d = import(c, "test/data", true);
+  auto const routing = utl::init_from<ep::routing>(d).value();
+
+  for(int i=0;i<coordinates.size();++i) {
+    for(int j=0;j<coordinates.size();++j) {
+      if(i==j) continue;
+      auto result = route(coordinates[i],coordinates[j],interval,routing);
+      for(auto const& itinerary : result) {
+        auto ss = std::stringstream{};
+        print_short(ss, itinerary);
+        std::cout << "---\n" << ss.str() << "\n---\n" << std::endl;
+      }
+    }
+  }
+}
+
+void compare_with_expected(test_strings const& strings,origin_destination_matrix const& matrix) {
+  ASSERT_EQ(strings.size(),matrix.size());
+  for(int i=0;i<strings.size();++i) {
+    ASSERT_EQ(strings[i].size(),matrix[i].size());
+    for(int j=0;j<matrix[i].size();++j) {
+      ASSERT_EQ(strings[i][j].size(),matrix[i][j].size());
+      if(i==j) continue;
+      for(int k=0;k<matrix[i][j].size();++k) {
+        auto ss = std::stringstream{};
+        print_short(ss, matrix[i][j][k]);
+        ASSERT_EQ(strings[i][j][k],ss.str());
+      }
+    }
+  }
+}
+
+void test_route(std::vector<Coordinates> const& coordinates,std::string const& gtfs,
+  interval<unixtime_t> const& interval,test_strings const& expected_strings, const char* street_file) {
+  auto ec = std::error_code{};
+  std::filesystem::remove_all("test/data", ec);
+
+  auto const c = config{
+    .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
+    .osm_ = {street_file},
     .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
                 .db_size_ = 1024U * 1024U * 25U}},
     .timetable_ =
@@ -256,6 +400,10 @@ void test_route(std::vector<Coordinates> const& coordinates,std::string const& g
       }
     }
   }
+}
+
+test_strings make_test_strings(unsigned long long const& size) {
+  return {size,std::vector<std::vector<std::string>>(size)};
 }
 
 TEST(origin_destination_matrix,coordinates) {
@@ -379,15 +527,8 @@ TEST(motis,origin_destination_matrix) {
 }
 
 TEST(motis,origin_destination_matrix_simple_plan) {
-  /*
-  DA,DA Hbf,49.87260,8.63085,1,,
-FFM,FFM Hbf,50.10701,8.66341,1,,
-LANGEN,Langen,49.99359,8.65677,1,,1
-   */
-  /*Coordinates north_west_corner(8,51);
-  Coordinates south_east_corner(9,49);*/
-  Coordinates north_west_corner(8.63084,50.10702);
-  Coordinates south_east_corner(8.66342,49.87259);
+  Coordinates north_west_corner(8.66177,50.11405);
+  Coordinates south_east_corner(8.667913,50.10592);
   auto coordinates = get_center_points(north_west_corner,south_east_corner,2,2);
   std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
   unixtime_t start_time = std::chrono::sys_days(day);
@@ -395,6 +536,45 @@ LANGEN,Langen,49.99359,8.65677,1,,1
   interval<unixtime_t> interval;
   interval.from_ = start_time;
   interval.to_ = end_time;
+
+  auto expected_strings = make_test_strings(4);
+
+  expected_strings[0][1] = {R"(date=2019-05-01, start=00:00, end=00:21, duration=00:21, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:21)
+])"};
+  expected_strings[0][2] = {R"(date=2019-05-01, start=00:00, end=00:20, duration=00:20, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:20)
+])"};
+  expected_strings[0][3] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:18)
+])"};
+  expected_strings[1][0] = {R"(date=2019-05-01, start=00:00, end=00:21, duration=00:21, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:21)
+])"};
+  expected_strings[1][2] = {R"(date=2019-05-01, start=00:00, end=00:12, duration=00:12, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:12)
+])"};
+  expected_strings[1][3] = {R"(date=2019-05-01, start=00:00, end=00:10, duration=00:10, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:10)
+])"};
+  expected_strings[2][0] = {R"(date=2019-05-01, start=00:00, end=00:20, duration=00:20, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:20)
+])"};
+  expected_strings[2][1] = {R"(date=2019-05-01, start=00:00, end=00:12, duration=00:12, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:12)
+])"};
+  expected_strings[2][3] = {R"(date=2019-05-01, start=00:00, end=00:04, duration=00:04, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:04)
+])"};
+  expected_strings[3][0] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:18)
+])"};
+  expected_strings[3][1] = {R"(date=2019-05-01, start=00:00, end=00:10, duration=00:10, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:10)
+])"};
+  expected_strings[3][2] = {R"(date=2019-05-01, start=00:00, end=00:04, duration=00:04, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:04)
+])"};
 
   auto ec = std::error_code{};
   std::filesystem::remove_all("test/data", ec);
@@ -408,7 +588,7 @@ LANGEN,Langen,49.99359,8.65677,1,,1
           config::timetable{
             .first_day_ = "2019-05-01",
             .num_days_ = 1,
-            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS}}}}},
+            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS4}}}}},
     .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
     .street_routing_ = true,
     .osr_footpath_ = true,
@@ -416,173 +596,92 @@ LANGEN,Langen,49.99359,8.65677,1,,1
     .reverse_geocoding_ = true};
   auto d = import(c, "test/data", true);
   auto const routing = utl::init_from<ep::routing>(d).value();
-  auto result = many_to_many_routing(north_west_corner,south_east_corner,2,2,interval,routing);
-  ASSERT_EQ(result.size(),4);
-  ASSERT_EQ(result[0].size(),4);
-  ASSERT_EQ(result[1].size(),4);
-  for(int i=0;i<4;++i) {
-    for(int j=0;j<4;++j) {
-      std::cout << i<<','<< j <<' '<<result[i][j].empty()<< std::endl;
+  const int PARTITIONS = 2;
+  auto result = many_to_many_routing(north_west_corner,south_east_corner,PARTITIONS,PARTITIONS,interval,routing);
+  auto expected_size = PARTITIONS*PARTITIONS;
+  ASSERT_EQ(result.size(),expected_size);
+  for(auto const& subvector: result) {
+    ASSERT_EQ(subvector.size(),expected_size);
+  }
+  for(int i=0;i<expected_size;++i) {
+    for(int j=0;j<expected_size;++j) {
+      if(i==j) continue;
       validate_result(result[i][j],coordinates[i],coordinates[j],interval);
-      for(auto const& itinerary:result[i][j]) {
-        auto ss = std::stringstream{};
-        print_short(ss, itinerary);
-        std::cout << "---\n" << ss.str() << "\n---\n" << std::endl;
-      }
     }
   }
+  compare_with_expected(expected_strings,result);
+
 }
 
 TEST(motis,route_simple_plan) {
 
-  test_strings expected_strings{{{},{}},{{},{}}};
+  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
+    Coordinates(8.66341,50.10701),
+  Coordinates(8.65677,49.99359)};
 
-  expected_strings[0][1] = {R"(date=2019-05-01, start=01:04, end=02:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 01:04, mode="WALK", trip="-", end=2019-05-01 01:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 01:05, mode="SUBWAY", trip="U4", end=2019-05-01 01:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 01:10, mode="WALK", trip="-", end=2019-05-01 01:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 02:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 02:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 02:45, mode="WALK", trip="-", end=2019-05-01 02:47)
-])",
+  auto expected_strings = make_test_strings(coordinates.size());
 
-  R"(date=2019-05-01, start=03:04, end=04:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 03:04, mode="WALK", trip="-", end=2019-05-01 03:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 03:05, mode="SUBWAY", trip="U4", end=2019-05-01 03:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 03:10, mode="WALK", trip="-", end=2019-05-01 03:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 04:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 04:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 04:45, mode="WALK", trip="-", end=2019-05-01 04:47)
-])",
-
-  R"(date=2019-05-01, start=05:04, end=06:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 05:04, mode="WALK", trip="-", end=2019-05-01 05:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 05:05, mode="SUBWAY", trip="U4", end=2019-05-01 05:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 05:10, mode="WALK", trip="-", end=2019-05-01 05:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:47)
-])",
-
-  R"(date=2019-05-01, start=07:04, end=08:47, duration=01:43, transfers=1, legs=[
+  expected_strings[0][1] = {R"(date=2019-05-01, start=07:04, end=14:47, duration=07:43, transfers=1, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
     (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
     (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 08:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 08:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 08:45, mode="WALK", trip="-", end=2019-05-01 08:47)
-])",
-
-  R"(date=2019-05-01, start=09:04, end=10:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 09:04, mode="WALK", trip="-", end=2019-05-01 09:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 09:05, mode="SUBWAY", trip="U4", end=2019-05-01 09:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 09:10, mode="WALK", trip="-", end=2019-05-01 09:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 10:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 10:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 10:45, mode="WALK", trip="-", end=2019-05-01 10:47)
-])",
-
-  R"(date=2019-05-01, start=11:04, end=12:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 11:04, mode="WALK", trip="-", end=2019-05-01 11:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 11:05, mode="SUBWAY", trip="U4", end=2019-05-01 11:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 11:10, mode="WALK", trip="-", end=2019-05-01 11:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 12:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 12:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 12:45, mode="WALK", trip="-", end=2019-05-01 12:47)
-])",
-
-  R"(date=2019-05-01, start=13:04, end=14:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 13:04, mode="WALK", trip="-", end=2019-05-01 13:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 13:05, mode="SUBWAY", trip="U4", end=2019-05-01 13:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 13:10, mode="WALK", trip="-", end=2019-05-01 13:12),
     (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
     (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:47)
-])",
-
-  R"(date=2019-05-01, start=15:04, end=16:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 16:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 16:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 16:45, mode="WALK", trip="-", end=2019-05-01 16:47)
-])",
-
-  R"(date=2019-05-01, start=17:04, end=18:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 17:04, mode="WALK", trip="-", end=2019-05-01 17:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 17:05, mode="SUBWAY", trip="U4", end=2019-05-01 17:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 17:10, mode="WALK", trip="-", end=2019-05-01 17:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 18:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 18:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 18:45, mode="WALK", trip="-", end=2019-05-01 18:47)
-])",
-
-  R"(date=2019-05-01, start=19:04, end=20:47, duration=01:43, transfers=1, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 19:04, mode="WALK", trip="-", end=2019-05-01 19:05),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 19:05, mode="SUBWAY", trip="U4", end=2019-05-01 19:10),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 19:10, mode="WALK", trip="-", end=2019-05-01 19:12),
-    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 20:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 20:45),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 20:45, mode="WALK", trip="-", end=2019-05-01 20:47)
 ])"};
 
-  expected_strings[1][0] = {R"(date=2019-05-01, start=01:13, end=01:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 01:13, mode="WALK", trip="-", end=2019-05-01 01:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 01:15, mode="METRO", trip="S3", end=2019-05-01 01:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 01:20, mode="WALK", trip="-", end=2019-05-01 01:21)
+  expected_strings[0][2] = {R"(date=2019-05-01, start=07:04, end=07:10, duration=00:06, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:10)
 ])",
+    R"(date=2019-05-01, start=15:04, end=15:10, duration=00:06, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:10)
+])"};
 
-  R"(date=2019-05-01, start=03:13, end=03:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 03:13, mode="WALK", trip="-", end=2019-05-01 03:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 03:15, mode="METRO", trip="S3", end=2019-05-01 03:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 03:20, mode="WALK", trip="-", end=2019-05-01 03:21)
-])",
-
-  R"(date=2019-05-01, start=05:13, end=05:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 05:13, mode="WALK", trip="-", end=2019-05-01 05:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 05:15, mode="METRO", trip="S3", end=2019-05-01 05:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 05:20, mode="WALK", trip="-", end=2019-05-01 05:21)
-])",
-
-  R"(date=2019-05-01, start=07:13, end=07:21, duration=00:08, transfers=0, legs=[
+  expected_strings[1][0] = {R"(date=2019-05-01, start=07:13, end=07:21, duration=00:08, transfers=0, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
     (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
     (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:21)
 ])",
-
-  R"(date=2019-05-01, start=09:13, end=09:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 09:13, mode="WALK", trip="-", end=2019-05-01 09:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 09:15, mode="METRO", trip="S3", end=2019-05-01 09:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 09:20, mode="WALK", trip="-", end=2019-05-01 09:21)
-])",
-
-  R"(date=2019-05-01, start=11:13, end=11:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 11:13, mode="WALK", trip="-", end=2019-05-01 11:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 11:15, mode="METRO", trip="S3", end=2019-05-01 11:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 11:20, mode="WALK", trip="-", end=2019-05-01 11:21)
-])",
-
-  R"(date=2019-05-01, start=13:13, end=13:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 13:13, mode="WALK", trip="-", end=2019-05-01 13:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 13:15, mode="METRO", trip="S3", end=2019-05-01 13:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 13:20, mode="WALK", trip="-", end=2019-05-01 13:21)
-])",
-
-  R"(date=2019-05-01, start=15:13, end=15:21, duration=00:08, transfers=0, legs=[
+    R"(date=2019-05-01, start=15:13, end=15:21, duration=00:08, transfers=0, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:13, mode="WALK", trip="-", end=2019-05-01 15:15),
     (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
     (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:21)
-])",
-
-  R"(date=2019-05-01, start=17:13, end=17:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 17:13, mode="WALK", trip="-", end=2019-05-01 17:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 17:15, mode="METRO", trip="S3", end=2019-05-01 17:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 17:20, mode="WALK", trip="-", end=2019-05-01 17:21)
-])",
-
-  R"(date=2019-05-01, start=19:13, end=19:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 19:13, mode="WALK", trip="-", end=2019-05-01 19:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 19:15, mode="METRO", trip="S3", end=2019-05-01 19:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 19:20, mode="WALK", trip="-", end=2019-05-01 19:21)
-])",
-
-  R"(date=2019-05-01, start=21:13, end=21:21, duration=00:08, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 21:13, mode="WALK", trip="-", end=2019-05-01 21:15),
-    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 21:15, mode="METRO", trip="S3", end=2019-05-01 21:20),
-    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 21:20, mode="WALK", trip="-", end=2019-05-01 21:21)
 ])"};
 
+  expected_strings[1][2] = {R"(date=2019-05-01, start=07:13, end=15:10, duration=07:57, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:10)
+])"};
+
+  expected_strings[2][0] = {R"(date=2019-05-01, start=06:35, end=07:21, duration=00:46, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 06:35, mode="WALK", trip="-", end=2019-05-01 06:35),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:47),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:21)
+])",R"(date=2019-05-01, start=14:35, end=15:21, duration=00:46, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 14:35, mode="WALK", trip="-", end=2019-05-01 14:35),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:47),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:21)
+])"};
+
+  expected_strings[2][1] = {R"(date=2019-05-01, start=06:35, end=06:47, duration=00:12, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 06:35, mode="WALK", trip="-", end=2019-05-01 06:35),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:47)
+])",R"(date=2019-05-01, start=14:35, end=14:47, duration=00:12, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 14:35, mode="WALK", trip="-", end=2019-05-01 14:35),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:47)
+])"};
   std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
   unixtime_t start_time = std::chrono::sys_days(day);
   auto end_time = start_time + std::chrono::minutes(1440);
@@ -590,14 +689,7 @@ TEST(motis,route_simple_plan) {
   interval.from_ = start_time;
   interval.to_ = end_time;
 
-  /*
-  DA,DA Hbf,49.87260,8.63085,1,,
-FFM,FFM Hbf,50.10701,8.66341,1,,
-  49.99359,8.65677
-   */
-  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
-    Coordinates(8.66341,50.10701)};
-  test_route(coordinates,std::string{simple_GTFS},interval,expected_strings);
+  test_route(coordinates,std::string{simple_GTFS},interval,expected_strings,"test/resources/darmstadt_langen_frankfurt.osm.pbf");
 }
 
 TEST(motis,route_simple_plan_2) {
@@ -614,42 +706,127 @@ FFM,FFM Hbf,50.10701,8.66341,1,,
 FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
 DA_10,DA Hbf,49.87336,8.62926,0,DA,10
    */
-  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
-  Coordinates(8.66341,50.10701),
-  Coordinates(8.67824,50.11404),
-  Coordinates(8.62926,49.87336)};
+  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260), //DA
+  Coordinates(8.66341,50.10701), //FFM
+  Coordinates(8.67824,50.11404), //FFM_HAUPT_S
+  Coordinates(8.631438,49.872797)}; //self made coordinates close to DA
 
-  auto ec = std::error_code{};
-  std::filesystem::remove_all("test/data", ec);
+  auto expected_strings = make_test_strings(coordinates.size());
 
-  auto const c = config{
-    .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
-    .osm_ = {"test/resources/test_case.osm.pbf"},
-    .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
-                .db_size_ = 1024U * 1024U * 25U}},
-    .timetable_ =
-          motis::config::timetable{
-            .first_day_ = "2019-05-01",
-            .num_days_ = 1,
-            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS2}}}}},
-    .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
-    .street_routing_ = true,
-    .osr_footpath_ = true,
-    .geocoding_ = true,
-    .reverse_geocoding_ = true};
-  auto d = import(c, "test/data", true);
-  auto const routing = utl::init_from<ep::routing>(d).value();
+  expected_strings[0][1] = {R"(date=2019-05-01, start=07:04, end=07:12, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12)
+])",R"(date=2019-05-01, start=15:04, end=15:12, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12)
+])"};
 
-  for(int i=0;i<coordinates.size();++i) {
-    for(int j=0;j<coordinates.size();++j) {
-      if(i==j) continue;
-      auto result = route(coordinates[i],coordinates[j],interval,routing);
-      for(auto const& itinerary: result) {
-        auto ss = std::stringstream{};
-        print_short(ss, itinerary);
-        std::cout << "---\n" << ss.str() << "\n---\n" << std::endl;
-      }
-    }
-  }
+  expected_strings[0][2] = {R"(date=2019-05-01, start=07:04, end=07:22, duration=00:18, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22)
+])",R"(date=2019-05-01, start=15:04, end=15:22, duration=00:18, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:22)
+])"};
+
+  expected_strings[0][3] = {R"(date=2019-05-01, start=00:00, end=00:01, duration=00:01, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:01)
+])"};
+
+  expected_strings[1][0] = {R"(date=2019-05-01, start=07:13, end=14:48, duration=07:35, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:48)
+])"};
+
+  expected_strings[1][2] = {R"(date=2019-05-01, start=07:13, end=07:22, duration=00:09, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22)
+])",
+    R"(date=2019-05-01, start=15:13, end=15:22, duration=00:09, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:13, mode="WALK", trip="-", end=2019-05-01 15:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:22)
+])"};
+
+  expected_strings[1][3] = {R"(date=2019-05-01, start=07:13, end=14:49, duration=07:36, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:49)
+])"};
+
+  expected_strings[2][0] = {R"(date=2019-05-01, start=06:33, end=06:48, duration=00:15, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:33, mode="WALK", trip="-", end=2019-05-01 06:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:48)
+])",R"(date=2019-05-01, start=14:33, end=14:48, duration=00:15, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:33, mode="WALK", trip="-", end=2019-05-01 14:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:48)
+])"};
+
+  expected_strings[2][1] = {R"(date=2019-05-01, start=06:33, end=07:12, duration=00:39, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:33, mode="WALK", trip="-", end=2019-05-01 06:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:49),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12)
+])",R"(date=2019-05-01, start=14:33, end=15:12, duration=00:39, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:33, mode="WALK", trip="-", end=2019-05-01 14:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:49),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12)
+])"};
+  expected_strings[2][3] = {R"(date=2019-05-01, start=06:33, end=06:49, duration=00:16, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 06:33, mode="WALK", trip="-", end=2019-05-01 06:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 06:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 06:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 06:45, mode="WALK", trip="-", end=2019-05-01 06:49)
+])",R"(date=2019-05-01, start=14:33, end=14:49, duration=00:16, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:33, mode="WALK", trip="-", end=2019-05-01 14:35),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=test_DA_10 [track=10, scheduled_track=10, level=-1], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_DA_10 [track=10, scheduled_track=10, level=-1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:49)
+])"};
+  expected_strings[3][0] = {R"(date=2019-05-01, start=00:00, end=00:01, duration=00:01, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:01)
+])"};
+  expected_strings[3][1] = {R"(date=2019-05-01, start=07:04, end=07:12, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12)
+])",
+    R"(date=2019-05-01, start=15:04, end=15:12, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12)
+])"};
+  expected_strings[3][2] = {R"(date=2019-05-01, start=07:04, end=07:22, duration=00:18, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:22)
+])",R"(date=2019-05-01, start=15:04, end=15:22, duration=00:18, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:04, mode="WALK", trip="-", end=2019-05-01 15:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:05, mode="SUBWAY", trip="U4", end=2019-05-01 15:10),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:10, mode="WALK", trip="-", end=2019-05-01 15:12),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
+    (from=test_FFM_HAUPT_S [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:22)
+])"};
+
+  test_route(coordinates,std::string{simple_GTFS2},interval,expected_strings,"test/resources/test_case.osm.pbf");
 }
 }// namespace origin_destination_matrix
