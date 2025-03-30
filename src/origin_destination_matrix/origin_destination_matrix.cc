@@ -44,7 +44,7 @@ std::vector<interval<unixtime_t>> make_intervals(interval<unixtime_t> const& sta
 }
 
 
-std::vector<route_result> route(Coordinates const& from, Coordinates const& to, interval<unixtime_t>const& interval, motis::ep::routing const& routing) {
+std::vector<route_result> route(Coordinates const& from, Coordinates const& to, interval<unixtime_t>const& interval, motis::ep::routing const& routing,std::string const& additional ) {
   std::vector<route_result> results{};
 
   Coordinates swapped_from(from.y,from.x);
@@ -64,7 +64,7 @@ std::vector<route_result> route(Coordinates const& from, Coordinates const& to, 
 }
 
 
-origin_destination_matrix many_to_many_routing(Coordinates const& north_west_corner,Coordinates const& south_east_corner ,int const& x_partitions,int const& y_partitions,interval<unixtime_t> const& start_time,motis::ep::routing const& routing){
+origin_destination_matrix many_to_many_routing(Coordinates const& north_west_corner,Coordinates const& south_east_corner ,int const& x_partitions,int const& y_partitions,interval<unixtime_t> const& start_time,motis::ep::routing const& routing,std::string const& additional ){
   if(x_partitions<1 || y_partitions<1) throw std::logic_error("Less then 1 partition doesnt make sense");
   auto const center_points = get_center_points(north_west_corner,south_east_corner,x_partitions,y_partitions);
   auto const time_intervals = make_intervals(start_time);
@@ -80,7 +80,7 @@ origin_destination_matrix many_to_many_routing(Coordinates const& north_west_cor
       for(int j=0;j<center_points.size();++j) {
         if(i==j) continue;
         for(auto const& interval : time_intervals) {
-          auto result = route(center_points[i],center_points[j],interval,routing);
+          auto result = route(center_points[i],center_points[j],interval,routing,additional);
           og_dest_matrix[i][j].append_range(result);
         }
       }

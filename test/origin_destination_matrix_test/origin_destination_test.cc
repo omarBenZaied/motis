@@ -249,6 +249,60 @@ S4,01:20:00,25:20:00,28800
 S5,00:15:00,24:15:00,28800
 )"sv;
 
+constexpr auto const simple_GTFS_Aachen = R"(
+# agency.txt
+agency_id,agency_name,agency_url,agency_timezone
+DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
+
+# stops.txt
+stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
+ST1,Aachen Hbf,50.76769,6.091071,0,,
+ST3,Schwelm,50.770202,6.116475,0,,
+ST4,Duesseldorf Flughafen,50.769862,6.07384,0,,
+
+# routes.txt
+route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
+S3,DB,S3,,,109
+S4,DB,S4,,,109
+S5,DB,S5,,,109
+
+# trips.txt
+route_id,service_id,trip_id,trip_headsign,block_id
+S3,S1,S3,,
+S4,S1,S4,,
+S5,S1,S5,,
+
+# stop_times.txt
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
+S3,01:15:00,01:15:00,ST1,1,0,0
+S3,01:20:00,01:20:00,ST3,2,0,0
+S4,01:20:00,01:20:00,ST3,1,0,0
+S4,01:25:00,01:25:00,ST4,2,0,0
+S5,00:20:00,00:20:00,ST4,1,0,0
+S5,00:25:00,00:25:00,ST1,2,0,0
+
+# calendar_dates.txt
+service_id,date,exception_type
+S1,20190501,1
+
+# frequencies.txt
+trip_id,start_time,end_time,headway_secs
+S3,01:15:00,25:15:00,28800
+S4,01:20:00,25:20:00,28800
+S5,00:20:00,24:20:00,28800
+)"sv;
+/*
+Coordinates(6.091071,50.76769),Coordinates(6.070715,50.78036),
+    Coordinates(6.116475,50.770202),
+    Coordinates(6.07384,50.769862)
+ */
+/*
+ST1,Aachen Hbf,50.76769,6.091071,0,,
+ST2,Au_Sieg,50.773765,7.656537,0,,
+ST3,Schwelm,51.290526,7.289681,0,,
+ST4,Duesseldorf Flughafen,51.292009,6.786836,0,,
+ */
+
 void print_short(std::ostream& out, api::Itinerary const& j) {
   auto const format_time = [&](auto&& t, char const* fmt = "%F %H:%M") {
     out << date::format(fmt, *t);
@@ -472,8 +526,6 @@ TEST(motis,origin_destination_matrix) {
   Coordinates lower_right(8.629724234688751,49.87253873915287);
   std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
   unixtime_t start_time = std::chrono::sys_days(day);
-  /*auto now = std::chrono::system_clock::now();
-  unixtime_t start_time(std::chrono::duration_cast<std::chrono::minutes>(now.time_since_epoch()));*/
   // 30 Days
   auto end_time = start_time+std::chrono::minutes(43200);
   interval<unixtime_t> interval;
@@ -526,10 +578,73 @@ TEST(motis,origin_destination_matrix) {
   }
 }
 
+TEST(motis,routing_printer) {
+  std::vector<Coordinates> coordinates{
+    Coordinates(6.091071,50.76769),Coordinates(6.070715,50.78036),
+    Coordinates(6.116475,50.770202),
+    Coordinates(6.07384,50.769862)};
+  Coordinates north_west(6.069215,50.780202);
+  Coordinates south_east(6.107975,50.76269);
+  auto centers = get_center_points(north_west,south_east,2,2);
+  auto ec = std::error_code{};
+  std::filesystem::remove_all("test/data", ec);
+  auto const c = motis::config{
+    .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
+    .osm_ = {"test/resources/aachen.osm.pbf"},
+    .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
+                .db_size_ = 1024U * 1024U * 25U}},
+    .timetable_ =
+          motis::config::timetable{
+            .first_day_ = "2019-05-01",
+            .num_days_ = 2,
+            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS_Aachen}}}}},
+    .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
+    .street_routing_ = true,
+    .osr_footpath_ = true,
+    .geocoding_ = true,
+    .reverse_geocoding_ = true};
+  auto d = import(c, "test/data", true);
+
+  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
+  unixtime_t start_time = std::chrono::sys_days(day);
+  // 30 Days
+  auto end_time = start_time+std::chrono::minutes(1440);
+  interval<unixtime_t> interval;
+  interval.from_ = start_time;
+  interval.to_ = end_time;
+  auto const routing = utl::init_from<ep::routing>(d).value();
+  auto result = many_to_many_routing(north_west,south_east,2,2,interval,routing);
+  for(int i=0;i<4;++i) {
+    for(int j=0;j<4;++j) {
+      std::cout << i << ',' << j << std::endl;
+      for(auto const& itinerary:result[i][j]) {
+        std::stringstream ss{};
+        print_short(ss,itinerary);
+        std::cout << ss.str() << std::endl;
+      }
+    }
+  }
+  /*for(int i=0;i<coordinates.size();++i) {
+    for(int j=0;j<coordinates.size();++j) {
+      if(i==j)continue;
+      auto result = route(coordinates[i],coordinates[j],interval,routing);
+      std::cout<< i << ',' << j << std::endl;
+      for(auto const& itinerary:result) {
+        auto ss = std::stringstream{};
+        print_short(ss,itinerary);
+        std::cout<<ss.str()<<std::endl;
+      }
+    }
+  }*/
+}
+
 TEST(motis,origin_destination_matrix_simple_plan) {
-  Coordinates north_west_corner(8.66177,50.11405);
-  Coordinates south_east_corner(8.667913,50.10592);
-  auto coordinates = get_center_points(north_west_corner,south_east_corner,2,2);
+  /*Coordinates north_west_corner(8.66177,50.11405);
+  Coordinates south_east_corner(8.667913,50.10592);*/
+  Coordinates north_west(6.069215,50.780202);
+  Coordinates south_east(6.107975,50.76269);
+  const int PARTITIONS = 2;
+  auto coordinates = get_center_points(north_west,south_east,PARTITIONS,PARTITIONS);
   std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
   unixtime_t start_time = std::chrono::sys_days(day);
   auto end_time = start_time + std::chrono::minutes(1440);
@@ -537,43 +652,45 @@ TEST(motis,origin_destination_matrix_simple_plan) {
   interval.from_ = start_time;
   interval.to_ = end_time;
 
-  auto expected_strings = make_test_strings(4);
+  auto expected_strings = make_test_strings(PARTITIONS*PARTITIONS);
 
-  expected_strings[0][1] = {R"(date=2019-05-01, start=00:00, end=00:21, duration=00:21, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:21)
+  expected_strings[0][1] = {R"(date=2019-05-01, start=00:00, end=00:27, duration=00:27, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:27)
 ])"};
-  expected_strings[0][2] = {R"(date=2019-05-01, start=00:00, end=00:20, duration=00:20, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:20)
-])"};
-  expected_strings[0][3] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
+  expected_strings[0][2] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:18)
 ])"};
-  expected_strings[1][0] = {R"(date=2019-05-01, start=00:00, end=00:21, duration=00:21, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:21)
+  expected_strings[0][3] = {R"(date=2019-05-01, start=00:00, end=00:29, duration=00:29, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:29)
 ])"};
-  expected_strings[1][2] = {R"(date=2019-05-01, start=00:00, end=00:12, duration=00:12, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:12)
+  expected_strings[1][0] = {R"(date=2019-05-01, start=00:00, end=00:27, duration=00:27, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:27)
 ])"};
-  expected_strings[1][3] = {R"(date=2019-05-01, start=00:00, end=00:10, duration=00:10, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:10)
+  expected_strings[1][3] = {R"(date=2019-05-01, start=00:00, end=00:19, duration=00:19, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:19)
 ])"};
-  expected_strings[2][0] = {R"(date=2019-05-01, start=00:00, end=00:20, duration=00:20, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:20)
-])"};
-  expected_strings[2][1] = {R"(date=2019-05-01, start=00:00, end=00:12, duration=00:12, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:12)
-])"};
-  expected_strings[2][3] = {R"(date=2019-05-01, start=00:00, end=00:04, duration=00:04, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:04)
-])"};
-  expected_strings[3][0] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
+  expected_strings[2][0] = {R"(date=2019-05-01, start=00:00, end=00:18, duration=00:18, transfers=0, legs=[
     (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:18)
 ])"};
-  expected_strings[3][1] = {R"(date=2019-05-01, start=00:00, end=00:10, duration=00:10, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:10)
+  expected_strings[2][3] = {R"(date=2019-05-01, start=00:00, end=00:28, duration=00:28, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:28)
+])",R"(date=2019-05-01, start=06:11, end=06:38, duration=00:27, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_ST4 [track=-, scheduled_track=-, level=1], start=2019-05-01 06:11, mode="WALK", trip="-", end=2019-05-01 06:20),
+    (from=test_ST4 [track=-, scheduled_track=-, level=1], to=test_ST1 [track=-, scheduled_track=-, level=1], start=2019-05-01 06:20, mode="METRO", trip="S5", end=2019-05-01 06:25),
+    (from=test_ST1 [track=-, scheduled_track=-, level=1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 06:25, mode="WALK", trip="-", end=2019-05-01 06:38)
+])",R"(date=2019-05-01, start=14:11, end=14:38, duration=00:27, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_ST4 [track=-, scheduled_track=-, level=1], start=2019-05-01 14:11, mode="WALK", trip="-", end=2019-05-01 14:20),
+    (from=test_ST4 [track=-, scheduled_track=-, level=1], to=test_ST1 [track=-, scheduled_track=-, level=1], start=2019-05-01 14:20, mode="METRO", trip="S5", end=2019-05-01 14:25),
+    (from=test_ST1 [track=-, scheduled_track=-, level=1], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:25, mode="WALK", trip="-", end=2019-05-01 14:38)
 ])"};
-  expected_strings[3][2] = {R"(date=2019-05-01, start=00:00, end=00:04, duration=00:04, transfers=0, legs=[
-    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:04)
+  expected_strings[3][0] = {R"(date=2019-05-01, start=00:00, end=00:29, duration=00:29, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:29)
+])"};
+  expected_strings[3][1] = {R"(date=2019-05-01, start=00:00, end=00:19, duration=00:19, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:19)
+])"};
+  expected_strings[3][2] = {R"(date=2019-05-01, start=00:00, end=00:28, duration=00:28, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 00:00, mode="WALK", trip="-", end=2019-05-01 00:28)
 ])"};
 
   auto ec = std::error_code{};
@@ -581,14 +698,14 @@ TEST(motis,origin_destination_matrix_simple_plan) {
 
   auto const c = config{
     .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
-    .osm_ = {"test/resources/test_case.osm.pbf"},
+    .osm_ = {"test/resources/aachen.osm.pbf"},
     .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
                 .db_size_ = 1024U * 1024U * 25U}},
     .timetable_ =
           config::timetable{
             .first_day_ = "2019-05-01",
             .num_days_ = 1,
-            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS4}}}}},
+            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS_Aachen}}}}},
     .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
     .street_routing_ = true,
     .osr_footpath_ = true,
@@ -596,8 +713,7 @@ TEST(motis,origin_destination_matrix_simple_plan) {
     .reverse_geocoding_ = true};
   auto d = import(c, "test/data", true);
   auto const routing = utl::init_from<ep::routing>(d).value();
-  const int PARTITIONS = 2;
-  auto result = many_to_many_routing(north_west_corner,south_east_corner,PARTITIONS,PARTITIONS,interval,routing);
+  auto result = many_to_many_routing(north_west,south_east,PARTITIONS,PARTITIONS,interval,routing);
   auto expected_size = PARTITIONS*PARTITIONS;
   ASSERT_EQ(result.size(),expected_size);
   for(auto const& subvector: result) {
