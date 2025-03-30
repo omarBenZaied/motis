@@ -17,59 +17,6 @@ using namespace motis;
 
 using test_strings = std::vector<std::vector<std::vector<std::string>>>;
 
-constexpr auto const kGTFS = R"(
-# agency.txt
-agency_id,agency_name,agency_url,agency_timezone
-DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
-
-# stops.txt
-stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
-DA,DA Hbf,49.87260,8.63085,1,,
-DA_3,DA Hbf,49.87355,8.63003,0,DA,3
-DA_10,DA Hbf,49.87336,8.62926,0,DA,10
-FFM,FFM Hbf,50.10701,8.66341,1,,
-FFM_101,FFM Hbf,50.10739,8.66333,0,FFM,101
-FFM_10,FFM Hbf,50.10593,8.66118,0,FFM,10
-FFM_12,FFM Hbf,50.10658,8.66178,0,FFM,12
-de:6412:10:6:1,FFM Hbf U-Bahn,50.107577,8.6638173,0,FFM,U4
-LANGEN,Langen,49.99359,8.65677,1,,1
-FFM_HAUPT,FFM Hauptwache,50.11403,8.67835,1,,
-FFM_HAUPT_U,Hauptwache U1/U2/U3/U8,50.11385,8.67912,0,FFM_HAUPT,
-FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
-
-# routes.txt
-route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
-S3,DB,S3,,,109
-U4,DB,U4,,,402
-ICE,DB,ICE,,,101
-
-# trips.txt
-route_id,service_id,trip_id,trip_headsign,block_id
-S3,S1,S3,,
-U4,S1,U4,,
-ICE,S1,ICE,,
-
-# stop_times.txt
-trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
-S3,01:15:00,01:15:00,FFM_101,1,0,0
-S3,01:20:00,01:20:00,FFM_HAUPT_S,2,0,0
-U4,01:05:00,01:05:00,de:6412:10:6:1,0,0,0
-U4,01:10:00,01:10:00,FFM_HAUPT_U,1,0,0
-ICE,00:35:00,00:35:00,DA_10,0,0,0
-ICE,00:45:00,00:45:00,FFM_10,1,0,0
-
-# calendar_dates.txt
-service_id,date,exception_type
-S1,20190501,1
-
-# frequencies.txt
-trip_id,start_time,end_time,headway_secs
-S3,01:15:00,25:15:00,3600
-ICE,00:35:00,24:35:00,3600
-U4,01:05:00,25:01:00,3600
-)"sv;
-
-
 constexpr auto const simple_GTFS = R"(
 # agency.txt
 agency_id,agency_name,agency_url,agency_timezone
@@ -157,98 +104,6 @@ ICE,00:35:00,24:35:00,28800
 U4,01:05:00,25:05:00,28800
 )"sv;
 
-constexpr auto const simple_GTFS3 = R"(
-# agency.txt
-agency_id,agency_name,agency_url,agency_timezone
-DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
-
-# stops.txt
-stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
-FFM,FFM Hbf,50.10701,8.66341,1,,
-FFM_101,FFM Hbf,50.10739,8.66333,0,FFM,101
-FFM_10,FFM Hbf,50.10593,8.66118,0,FFM,10
-FFM_12,FFM Hbf,50.10658,8.66178,0,FFM,12
-FFM_HAUPT,FFM Hauptwache,50.11403,8.67835,1,,
-FFM_HAUPT_U,Hauptwache U1/U2/U3/U8,50.11385,8.67912,0,FFM_HAUPT,
-FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
-
-# routes.txt
-route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
-S3,DB,S3,,,109
-U4,DB,U4,,,402
-
-# trips.txt
-route_id,service_id,trip_id,trip_headsign,block_id
-S3,S1,S3,,
-U4,S1,U4,,
-
-# stop_times.txt
-trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
-S3,01:15:00,01:15:00,FFM,1,0,0
-S3,01:20:00,01:20:00,FFM_HAUPT,2,0,0
-U4,01:05:00,01:05:00,FFM_HAUPT,0,0,0
-U4,01:10:00,01:10:00,FFM,1,0,0
-
-# calendar_dates.txt
-service_id,date,exception_type
-S1,20190501,1
-
-# frequencies.txt
-trip_id,start_time,end_time,headway_secs
-S3,01:15:00,25:15:00,28800
-U4,01:05:00,25:01:00,28800
-)"sv;
-
-constexpr auto const simple_GTFS4 = R"(
-# agency.txt
-agency_id,agency_name,agency_url,agency_timezone
-DB,Deutsche Bahn,https://deutschebahn.com,Europe/Berlin
-
-# stops.txt
-stop_id,stop_name,stop_lat,stop_lon,location_type,parent_station,platform_code
-ST1,Station 1,50.1,8.6,1,,
-ST2,Station 2,50.1,8.7,0,FFM,101
-ST3,Station 3,50.0,8.6,0,FFM,10
-ST4,Station 4,50.0,8.7,0,FFM,12
-
-
-# routes.txt
-route_id,agency_id,route_short_name,route_long_name,route_desc,route_type
-S3,DB,S3,,,109
-U4,DB,U4,,,402
-S4,DB,S4,,,109
-S5,DB,S5,,,109
-
-# trips.txt
-route_id,service_id,trip_id,trip_headsign,block_id
-S3,S1,S3,,
-U4,S1,U4,,
-S4,S1,S4,,
-S5,S1,S5,,
-
-# stop_times.txt
-trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type
-S3,01:15:00,01:15:00,ST1,1,0,0
-S3,01:20:00,01:20:00,ST2,2,0,0
-U4,01:05:00,01:05:00,ST2,0,0,0
-U4,01:10:00,01:10:00,ST3,1,0,0
-S4,01:20:00,01:20:00,ST3,1,0,0
-S4,01:25:00,01:25:00,ST4,2,0,0
-S5,00:15:00,00:15:00,ST4,1,0,0
-S5,00:20:00,00:20:00,ST1,2,0,0
-
-# calendar_dates.txt
-service_id,date,exception_type
-S1,20190501,1
-
-# frequencies.txt
-trip_id,start_time,end_time,headway_secs
-S3,01:15:00,25:15:00,28800
-U4,01:05:00,25:01:00,28800
-S4,01:20:00,25:20:00,28800
-S5,00:15:00,24:15:00,28800
-)"sv;
-
 constexpr auto const simple_GTFS_Aachen = R"(
 # agency.txt
 agency_id,agency_name,agency_url,agency_timezone
@@ -291,17 +146,6 @@ S3,01:15:00,25:15:00,28800
 S4,01:20:00,25:20:00,28800
 S5,00:20:00,24:20:00,28800
 )"sv;
-/*
-Coordinates(6.091071,50.76769),Coordinates(6.070715,50.78036),
-    Coordinates(6.116475,50.770202),
-    Coordinates(6.07384,50.769862)
- */
-/*
-ST1,Aachen Hbf,50.76769,6.091071,0,,
-ST2,Au_Sieg,50.773765,7.656537,0,,
-ST3,Schwelm,51.290526,7.289681,0,,
-ST4,Duesseldorf Flughafen,51.292009,6.786836,0,,
- */
 
 void print_short(std::ostream& out, api::Itinerary const& j) {
   auto const format_time = [&](auto&& t, char const* fmt = "%F %H:%M") {
@@ -544,7 +388,7 @@ TEST(motis,origin_destination_matrix) {
           motis::config::timetable{
           .first_day_ = "2019-05-01",
           .num_days_ = 2,
-          .datasets_ = {{"test", {.path_ = std::string{kGTFS}}}}},
+          .datasets_ = {{"test", {.path_ = std::string{simple_GTFS}}}}},
   .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
   .street_routing_ = true,
   .osr_footpath_ = true,
@@ -578,72 +422,10 @@ TEST(motis,origin_destination_matrix) {
   }
 }
 
-TEST(motis,routing_printer) {
-  std::vector<Coordinates> coordinates{
-    Coordinates(6.091071,50.76769),Coordinates(6.070715,50.78036),
-    Coordinates(6.116475,50.770202),
-    Coordinates(6.07384,50.769862)};
-  Coordinates north_west(6.069215,50.780202);
-  Coordinates south_east(6.107975,50.76269);
-  auto centers = get_center_points(north_west,south_east,2,2);
-  auto ec = std::error_code{};
-  std::filesystem::remove_all("test/data", ec);
-  auto const c = motis::config{
-    .server_ = {{.web_folder_ = "ui/build", .n_threads_ = 1U}},
-    .osm_ = {"test/resources/aachen.osm.pbf"},
-    .tiles_ = {{.profile_ = "deps/tiles/profile/full.lua",
-                .db_size_ = 1024U * 1024U * 25U}},
-    .timetable_ =
-          motis::config::timetable{
-            .first_day_ = "2019-05-01",
-            .num_days_ = 2,
-            .datasets_ = {{"test", {.path_ = std::string{simple_GTFS_Aachen}}}}},
-    .gbfs_ = {{.feeds_ = {{"CAB", {.url_ = "./test/resources/gbfs"}}}}},
-    .street_routing_ = true,
-    .osr_footpath_ = true,
-    .geocoding_ = true,
-    .reverse_geocoding_ = true};
-  auto d = import(c, "test/data", true);
-
-  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
-  unixtime_t start_time = std::chrono::sys_days(day);
-  // 30 Days
-  auto end_time = start_time+std::chrono::minutes(1440);
-  interval<unixtime_t> interval;
-  interval.from_ = start_time;
-  interval.to_ = end_time;
-  auto const routing = utl::init_from<ep::routing>(d).value();
-  auto result = many_to_many_routing(north_west,south_east,2,2,interval,routing);
-  for(int i=0;i<4;++i) {
-    for(int j=0;j<4;++j) {
-      std::cout << i << ',' << j << std::endl;
-      for(auto const& itinerary:result[i][j]) {
-        std::stringstream ss{};
-        print_short(ss,itinerary);
-        std::cout << ss.str() << std::endl;
-      }
-    }
-  }
-  /*for(int i=0;i<coordinates.size();++i) {
-    for(int j=0;j<coordinates.size();++j) {
-      if(i==j)continue;
-      auto result = route(coordinates[i],coordinates[j],interval,routing);
-      std::cout<< i << ',' << j << std::endl;
-      for(auto const& itinerary:result) {
-        auto ss = std::stringstream{};
-        print_short(ss,itinerary);
-        std::cout<<ss.str()<<std::endl;
-      }
-    }
-  }*/
-}
-
 TEST(motis,origin_destination_matrix_simple_plan) {
-  /*Coordinates north_west_corner(8.66177,50.11405);
-  Coordinates south_east_corner(8.667913,50.10592);*/
   Coordinates north_west(6.069215,50.780202);
   Coordinates south_east(6.107975,50.76269);
-  const int PARTITIONS = 2;
+  constexpr int PARTITIONS = 2;
   auto coordinates = get_center_points(north_west,south_east,PARTITIONS,PARTITIONS);
   std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
   unixtime_t start_time = std::chrono::sys_days(day);
@@ -816,12 +598,6 @@ TEST(motis,route_simple_plan_2) {
   interval.from_ = start_time;
   interval.to_ = end_time;
 
-  /*
-  DA,DA Hbf,49.87260,8.63085,1,,
-FFM,FFM Hbf,50.10701,8.66341,1,,
-FFM_HAUPT_S,FFM Hauptwache S,50.11404,8.67824,0,FFM_HAUPT,
-DA_10,DA Hbf,49.87336,8.62926,0,DA,10
-   */
   std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260), //DA
   Coordinates(8.66341,50.10701), //FFM
   Coordinates(8.67824,50.11404), //FFM_HAUPT_S
