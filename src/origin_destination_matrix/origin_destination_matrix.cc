@@ -55,7 +55,7 @@ std::vector<route_result> route(Coordinates const& from, Coordinates const& to, 
   swapped_to.append_to_string(to_string,',',14);
   std::string time_string = std::format("&time={0:%F}T{0:%R}Z",interval.from_);
   std::string window = "&searchWindow="+std::to_string((interval.to_ - interval.from_).count()*60);
-  std::string query = from_string+to_string+time_string+window;
+  std::string query = from_string+to_string+time_string+window+additional;
 
   auto routing_result = routing(query);
   results.append_range(routing_result.direct_);

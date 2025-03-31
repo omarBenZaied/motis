@@ -511,6 +511,38 @@ TEST(motis,origin_destination_matrix_simple_plan) {
 
 }
 
+/*TEST(motis,route_simple_plan_alternative) {
+  std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260), Coordinates(8.66341,50.10701)};
+  auto expected_strings = make_test_strings(coordinates.size());
+
+  expected_strings[0][1] = {R"(date=2019-05-01, start=07:04, end=14:47, duration=07:43, transfers=1, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:04, mode="WALK", trip="-", end=2019-05-01 07:05),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 07:05, mode="SUBWAY", trip="U4", end=2019-05-01 07:10),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_LANGEN [track=-, scheduled_track=-, level=0], start=2019-05-01 07:10, mode="WALK", trip="-", end=2019-05-01 07:12),
+    (from=test_LANGEN [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 14:35, mode="HIGHSPEED_RAIL", trip="ICE ", end=2019-05-01 14:45),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 14:45, mode="WALK", trip="-", end=2019-05-01 14:47)
+])"};
+
+  expected_strings[1][0] = {R"(date=2019-05-01, start=07:13, end=07:21, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 07:13, mode="WALK", trip="-", end=2019-05-01 07:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 07:15, mode="METRO", trip="S3", end=2019-05-01 07:20),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 07:20, mode="WALK", trip="-", end=2019-05-01 07:21)
+])",
+    R"(date=2019-05-01, start=15:13, end=15:21, duration=00:08, transfers=0, legs=[
+    (from=- [track=-, scheduled_track=-, level=0], to=test_FFM [track=-, scheduled_track=-, level=-3], start=2019-05-01 15:13, mode="WALK", trip="-", end=2019-05-01 15:15),
+    (from=test_FFM [track=-, scheduled_track=-, level=-3], to=test_DA [track=-, scheduled_track=-, level=0], start=2019-05-01 15:15, mode="METRO", trip="S3", end=2019-05-01 15:20),
+    (from=test_DA [track=-, scheduled_track=-, level=0], to=- [track=-, scheduled_track=-, level=0], start=2019-05-01 15:20, mode="WALK", trip="-", end=2019-05-01 15:21)
+])"};
+  std::chrono::year_month_day day(std::chrono::year(2019),std::chrono::month(5),std::chrono::day(1));
+  unixtime_t start_time = std::chrono::sys_days(day);
+  auto end_time = start_time + std::chrono::minutes(1440);
+  interval<unixtime_t> interval;
+  interval.from_ = start_time;
+  interval.to_ = end_time;
+
+  test_route(coordinates,std::string{simple_GTFS},interval,expected_strings,"test/resources/test_case.osm.pbf");
+}*/
+
 TEST(motis,route_simple_plan) {
 
   std::vector<Coordinates> coordinates{Coordinates(8.63085,49.87260),
